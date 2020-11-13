@@ -1,0 +1,632 @@
+<form>
+  <label>Flow Addressservice</label>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label>Select time</label>
+      <default>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="env_token" searchWhenChanged="true">
+      <label>Select environment</label>
+      <choice value="prod">PRODUCTION</choice>
+      <choice value="acc">ACCEPTANCE</choice>
+      <choice value="tst">TEST</choice>
+      <default>PRODUCTION</default>
+      <change>
+        <condition label="PRODUCTION">
+          <set token="index_app">index=applications_esb_p_apl6169</set>
+          <set token="env_label">production environment</set>
+          <set token="env_postfix">p</set>
+        </condition>
+        <condition label="ACCEPTANCE">
+          <set token="index_app">index=applications_esb_ota_apl6169</set>
+          <set token="env_label">acceptance environment</set>
+          <set token="env_postfix">a</set>
+        </condition>
+        <condition label="TEST">
+          <set token="index_app">index=applications_esb_ota_apl6169</set>
+          <set token="env_label">test environment</set>
+          <set token="env_postfix">t</set>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row depends="$alwaysHideCSSPanel$">
+    <panel>
+      <html>
+         <style>
+           h1.custom-flowheader {
+             display:inline;
+             color: #3440b6;
+           }
+           div.custom-div {
+             text-align:right !important;
+           }           
+           div.custom-paneldescription {
+             padding: 10px 10px 10px 10px;
+           }
+           .dashboard-panel h2{
+             background:#cccccc !important;
+             color:white !important;
+             text-align: left !important;
+             font-weight: bold !important;
+             border-top-right-radius: 15px;
+             border-top-left-radius: 15px;
+           }
+         </style>
+       </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="custom-flowheader">HA Proxy</h1>    <strong>|  Metrics inbound connections on the proxy server</strong>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>V2 client calls</title>
+      <html>
+        <div class="custom-paneldescription">
+          Below table shows total calls per client-certificate common name (CN) which is retrieved from received requests on https://api.esb.p16.cldsvc.net/esb-addressservice<strong>/v2</strong>. The CN indicates which application made the call.
+          Please note that this API version is created for backwards compatibility for clients.
+        </div>  
+      </html>
+      <table>
+        <search>
+          <query>
+$index_app$ host="/ecs/pnl$env_postfix$-esb-auth-haproxy"
+| search /esb-addressservice/v2
+| stats count by CN
+| rename CN as "Clients"
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+    <panel>
+      <title>V1 client calls</title>
+      <html>
+        <div class="custom-paneldescription">
+          Below table shows total calls per client-certificate common name (CN) which is retrieved from received requests on https://api.esb.p16.cldsvc.net/esb-addressservice<strong>/v1</strong>. The CN indicates which application made the call.</div>  
+      </html>
+      <table>
+        <search>
+          <query>
+$index_app$ host="/ecs/pnl$env_postfix$-esb-auth-haproxy"
+| search /esb-addressservice/v1
+| stats count by CN
+| rename CN as "Clients"            
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="custom-flowheader">ESB AddressService2.0</h1>    <strong>|  Metrics inbound webservice calls</strong>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Calls processing</title>
+      <single>
+        <title>Calls that made the full roundtrip (request-reply) vs calls that didn't.</title>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-addressservice"
+
+| rename
+MonitorMessage.Body.Logging.Status AS Status 
+
+| eval zip=mvzip('MonitorMessage.Body.MessageProperties.MessageProperty{}.name','MonitorMessage.Body.MessageProperties.MessageProperty{}.value')
+| eval CorrelationID=mvfilter(match(zip, "CorrelationID,"))
+
+| eval esb_request = if(Status=="RECEIVED" OR Status=="REQUEST", 1,0)
+| eval esb_reply=if(Status=="SENT" OR Status=="REPLY",1,0)
+
+| stats 
+count
+sum(esb_request) AS esb_request 
+sum(esb_reply) AS esb_reply
+BY CorrelationID
+
+| stats
+count(eval(esb_request&gt;1 AND esb_reply&lt;2)) AS not_processed
+count(eval(esb_request=2 AND esb_reply=2)) AS processed</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">143</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Errors</title>
+      <single>
+        <title>Logged errors</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 host="/ecs/pnlp-esb-addressservice" 
+
+| rename
+MonitorMessage.Body.Logging.Status AS Status 
+
+| eval esb_error_nonrec = if(Status=="NON_RECOVERABLE_ERROR", 1,0)
+| eval esb_error_rec=if(Status=="RECOVERABLE_ERROR",1,0)
+
+| stats
+sum(esb_error_nonrec) AS non_recoverable_error
+sum(esb_error_rec) AS recoverable_error            
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">143</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">1</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Latency</title>
+      <single>
+        <title>Average processing time of successfully processed calls</title>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-addressservice" 
+
+| rename
+MonitorMessage.Body.Logging.Status AS Status 
+
+| eval zip=mvzip('MonitorMessage.Body.MessageProperties.MessageProperty{}.name','MonitorMessage.Body.MessageProperties.MessageProperty{}.value')
+| eval CorrelationID=mvfilter(match(zip, "CorrelationID,"))
+
+| stats
+earliest(_time) AS earliest_event
+latest(_time) AS latest_event
+BY CorrelationID
+
+| eval response_time = latest_event - earliest_event
+| eval duration_time_ms = strftime(response_time, "%3N")
+| eval _time = latest_event
+
+| stats
+avg(duration_time_ms) as AvgResponseTime_ms
+
+| eval AvgResponseTime_ms=round(AvgResponseTime_ms,0)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">81</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+      <single>
+        <title>Average response time backend services</title>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-addressservice" 
+
+| rename
+MonitorMessage.Body.Logging.Status AS Status 
+
+| eval zip=mvzip('MonitorMessage.Body.MessageProperties.MessageProperty{}.name','MonitorMessage.Body.MessageProperties.MessageProperty{}.value')
+| eval CorrelationID=mvfilter(match(zip, "CorrelationID,"))
+
+| search
+(Status="REQUEST") OR
+(Status="REPLY")
+
+| stats
+earliest(_time) AS earliest_event
+latest(_time) AS latest_event
+BY CorrelationID
+
+| eval response_time = latest_event - earliest_event
+| eval duration_time_ms = strftime(response_time, "%3N")
+| eval _time = latest_event
+
+| stats
+avg(duration_time_ms) as AvgResponseTime_ms
+
+| eval AvgResponseTime_ms=round(AvgResponseTime_ms,0)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">83</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Avg response time per backend service operation</title>
+      <table>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-addressservice" 
+
+| rename
+MonitorMessage.Body.Logging.Status AS Status 
+
+| eval zip=mvzip('MonitorMessage.Body.MessageProperties.MessageProperty{}.name','MonitorMessage.Body.MessageProperties.MessageProperty{}.value')
+| eval Process=mvfilter(match(zip, "SoapAction,"))
+| eval CorrelationID=mvfilter(match(zip, "CorrelationID,"))
+
+| search
+(Status="REQUEST") OR
+(Status="REPLY")
+
+| stats
+values(Process) AS Process
+earliest(_time) AS earliest_event
+latest(_time) AS latest_event
+BY CorrelationID
+
+| eval response_time = latest_event - earliest_event
+| eval duration_time_ms = strftime(response_time, "%3N")
+| eval _time = latest_event
+
+| stats
+avg(duration_time_ms) as AvgResponseTime_ms
+by Process
+
+| eval AvgResponseTime_ms=round(AvgResponseTime_ms,0)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Graph message count over time</title>
+      <chart>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-addressservice" 
+
+| rename
+MonitorMessage.Body.Logging.Status AS Status 
+
+| eval zip=mvzip('MonitorMessage.Body.MessageProperties.MessageProperty{}.name','MonitorMessage.Body.MessageProperties.MessageProperty{}.value')
+| eval Process=mvfilter(match(zip, "SoapAction,"))
+
+| search Status="SENT"
+
+| stats 
+count
+earliest(_time) AS earliest_event
+latest(_time) AS latest_event
+BY _time
+
+| fields - latest_event
+| rename earliest_event AS _time
+
+| timechart span=5m count AS "# messages"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Avg response time backend services over time</title>
+      <chart>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-addressservice" 
+
+| rename
+MonitorMessage.Body.Logging.Status AS Status 
+
+| eval zip=mvzip('MonitorMessage.Body.MessageProperties.MessageProperty{}.name','MonitorMessage.Body.MessageProperties.MessageProperty{}.value')
+| eval CorrelationID=mvfilter(match(zip, "CorrelationID,"))
+
+| search
+(Status="REQUEST") OR
+(Status="REPLY")
+
+| stats
+earliest(_time) AS earliest_event
+latest(_time) AS latest_event
+BY CorrelationID
+
+| eval response_time = latest_event - earliest_event
+| eval duration_time_ms = strftime(response_time, "%3N")
+| eval _time = latest_event
+
+| chart avg(duration_time_ms) AS AvgResponseTime_ms over _time</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="custom-flowheader">VCS</h1>  <strong>|  Specific metrics for webcoding platform (aka VCS)</strong>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div class="custom-paneldescription">
+          Each physical VCS location belongs to a specific IP-range<br/>
+          <ul style="padding-left:20px">
+            <li>
+              <strong>Hanoi Vietnam</strong> 10.2.4* - 10.2.7*</li>
+            <li>
+              <strong>Laguna Phillipines</strong> 10.2.8.* - 10.2.11.*</li>
+            <li>
+              <strong>Dumaguete Phillipines</strong> 10.2.12.* - 10.2.15.*</li>
+          </ul>          
+        </div>  
+      </html>
+      <chart>
+        <title>Calls by source IP</title>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-auth-haproxy" | search ip=10.2.*
+
+| eval loc_hanoi=if(like(ip, "10.2.4%") OR like(ip, "10.2.5%") OR like(ip, "10.2.6%") OR like(ip, "10.2.7%"), 1, 0)
+| eval loc_laguna=if(like(ip, "10.2.8%") OR like(ip, "10.2.9%") OR like(ip, "10.2.10%") OR like(ip, "10.2.11%"), 1, 0)
+| eval loc_dumaguete=if(like(ip, "10.2.12%") OR like(ip, "10.2.13%") OR like(ip, "10.2.14%") OR like(ip, "10.2.15%"), 1, 0)
+
+| timechart span=1m sum(loc_hanoi) as "Hanoi", sum(loc_laguna) as "Laguna", sum(loc_dumaguete) as "Dumaguete"</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="height">397</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <map>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-auth-haproxy"
+| search cato_spi
+
+| eval loc_hanoi=if(like(ip, "10.2.4%") OR like(ip, "10.2.5%") OR like(ip, "10.2.6%") OR like(ip, "10.2.7%"), "1", "0")
+| eval loc_laguna=if(like(ip, "10.2.8%") OR like(ip, "10.2.9%") OR like(ip, "10.2.10%") OR like(ip, "10.2.11%"), "1", "0")
+| eval loc_dumaguete=if(like(ip, "10.2.12%") OR like(ip, "10.2.13%") OR like(ip, "10.2.14%") OR like(ip, "10.2.15%"), "1", "0")
+
+| eval depotLatitude=case('loc_hanoi'==1, "21.029000", 'loc_laguna'==1, "14.177043", 'loc_dumaguete'==1, "9.302925")
+| eval depotLongitude=case('loc_hanoi'==1, "105.782690", 'loc_laguna'==1, "121.124276", 'loc_dumaguete'==1, "123.297180")
+
+| geostats latfield=depotLatitude longfield=depotLongitude count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.choroplethLayer.colorBins">5</option>
+        <option name="mapping.choroplethLayer.colorMode">auto</option>
+        <option name="mapping.choroplethLayer.maximumColor">0xaf575a</option>
+        <option name="mapping.choroplethLayer.minimumColor">0x62b3b2</option>
+        <option name="mapping.choroplethLayer.neutralPoint">0</option>
+        <option name="mapping.choroplethLayer.shapeOpacity">0.75</option>
+        <option name="mapping.choroplethLayer.showBorder">1</option>
+        <option name="mapping.data.maxClusters">100</option>
+        <option name="mapping.legend.placement">bottomright</option>
+        <option name="mapping.map.center">(16.34,114.19)</option>
+        <option name="mapping.map.panning">1</option>
+        <option name="mapping.map.scrollZoom">1</option>
+        <option name="mapping.map.zoom">5</option>
+        <option name="mapping.markerLayer.markerMaxSize">50</option>
+        <option name="mapping.markerLayer.markerMinSize">10</option>
+        <option name="mapping.markerLayer.markerOpacity">0.8</option>
+        <option name="mapping.showTiles">1</option>
+        <option name="mapping.tileLayer.maxZoom">19</option>
+        <option name="mapping.tileLayer.minZoom">0</option>
+        <option name="mapping.tileLayer.tileOpacity">1</option>
+        <option name="mapping.tileLayer.url">http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png</option>
+        <option name="mapping.type">marker</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </map>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div class="custom-paneldescription">
+          Calls processed per source IP<br/>
+        </div>  
+      </html>
+      <table>
+        <search>
+          <query>$index_app$ host="/ecs/pnl$env_postfix$-esb-auth-haproxy" cato_spi
+| search /esb-addressservice/v2
+| stats count by ip
+| eval location=case((ip like "10.2.4%") or (ip like "10.2.5%") or (ip like "10.2.6%") or (ip like "10.2.7%"),"Hanoi", (ip like "10.2.8%") or (ip like "10.2.9%") or (ip like "10.2.10%") or (ip like "10.2.11%"),"Laguna",(ip like "10.2.12%") or (ip like "10.2.13%") or (ip like "10.2.14%") or (ip like "10.2.15%"),"Dumaguete")
+| table ip, location, count
+| sort count</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">30</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">true</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">false</option>
+      </table>
+    </panel>
+  </row>
+</form>
