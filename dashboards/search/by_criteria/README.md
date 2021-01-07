@@ -10,7 +10,7 @@ When a specific flow is selected, the visible link 'Go to the ESB documentation'
 
 ## Search result example
 
-![screenshot_search_result.png](dashboards/esb_search/screenshot_search_result.png)
+![screenshot_search_result.png](screenshot_search_result.png)
 
 ## Additional notes
 
@@ -18,5 +18,5 @@ When a specific flow is selected, the visible link 'Go to the ESB documentation'
 
 When user selects a specific flow to search in, irrelevant logging is filtered out using Splunk Search Macros. Search Macros are maintained in Splunk and are found under Settings > Advanced Search > Search macros. Screenshot: 
 
-![screenshot_search_macros.png](dashboards/esb_search/screenshot_search_macros.png)
+![screenshot_search_macros.png](screenshot_search_macros.png)
 
