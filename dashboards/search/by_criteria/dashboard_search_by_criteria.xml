@@ -1,0 +1,118 @@
+<form theme="light">
+  <label>ESB search</label>
+  <description>Search for logs based on your given criteria.</description>
+  <fieldset submitButton="true" autoRun="false">
+    <input type="dropdown" token="flow_hosts" searchWhenChanged="false">
+      <label>Select Flow</label>
+      <choice value="flow_all_hosts">All</choice>
+      <choice value="flow_distributiemelding_hosts">DistributieMelding</choice>
+      <choice value="flow_distributiemeldingoompd_hosts">DistributieMeldingOOMPD</choice>
+      <choice value="flow_executioneventpd_hosts">ExecutionEventPD</choice>
+      <choice value="flow_operatorordertransport_hosts">OperatorOrderTransport</choice>
+      <choice value="flow_processroute_hosts">ProcessRoutePD</choice>
+      <choice value="flow_sorteermelding_hosts">SorteerMelding</choice>
+      <choice value="flow_voormelding_hosts">Voormelding</choice>
+      <default>flow_all_hosts</default>
+      <change>
+        <condition label="All">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/616171012/Components</set>
+          <set token="flow_label">All</set>
+        </condition>
+        <condition label="DistributieMelding">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/792526929/Flow+DistributieMelding</set>
+          <set token="flow_label">DistributieMelding</set>
+        </condition>
+        <condition label="DistributieMeldingOOMPD">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/801505334/Flow+DistributieMelding+OOMPD</set>
+          <set token="flow_label">DistributieMeldingOOMPD</set>
+        </condition>
+        <condition label="ExecutionEventPD">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/892043488/Flow+ExecutionEvent+PD</set>
+          <set token="flow_label">ExecutionEventPD</set>
+        </condition>
+        <condition label="OperatorOrderTransport">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/833552465/Flow+Operatorordertransport</set>
+          <set token="flow_label">Operatorordertransport</set>
+        </condition>
+        <condition label="ProcessRoutePD">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/891420758/Flow+PD+ProcessRoute</set>
+          <set token="flow_label">ProcessRoutePD</set>
+        </condition>
+        <condition label="SorteerMelding">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/779878718/Flow+SorteerMelding</set>
+          <set token="flow_label">SorteerMelding</set>
+        </condition>
+        <condition label="Voormelding">
+          <set token="flow_confluence_link">https://postnl.atlassian.net/wiki/spaces/ESB/pages/753401873/Flow+Voormelding</set>
+          <set token="flow_label">Voormelding</set>
+        </condition>
+      </change>
+    </input>
+    <input type="time" token="field1" searchWhenChanged="false">
+      <label>Select time window</label>
+      <default>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="env_token" searchWhenChanged="false">
+      <label>Select environment</label>
+      <choice value="prod">PRODUCTION</choice>
+      <!--choice value="acc">ACCEPTANCE</choice-->
+      <default>prod</default>
+      <change>
+        <condition label="PRODUCTION">
+          <set token="index_app">applications_esb_p_apl6169</set>
+          <set token="env_label">production environment</set>
+        </condition>
+        <condition label="ACCEPTANCE">
+          <set token="index_app">applications_esb_ota_apl6169</set>
+          <set token="env_label">acceptance environment</set>
+        </condition>
+      </change>
+    </input>
+    <input type="text" token="search_string" searchWhenChanged="false">
+      <label>Search for string</label>
+      <default></default>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <!--h1 class="$env_token$">$env_label$</h1-->
+          <h1>
+            &gt; <a href="$flow_confluence_link$" target="_blank">Go to the ESB documentation</a> of selected flow: $flow_label|h$</h1>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <event>
+        <search>
+          <query>index=$index_app$
+
+(`$flow_hosts$`)
+
+| search $search_string$</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">20</option>
+        <option name="list.drilldown">none</option>
+        <option name="list.wrap">1</option>
+        <option name="maxLines">5</option>
+        <option name="raw.drilldown">full</option>
+        <option name="rowNumbers">0</option>
+        <option name="table.drilldown">all</option>
+        <option name="table.sortDirection">asc</option>
+        <option name="table.wrap">1</option>
+        <option name="type">list</option>
+        <option name="refresh.display">progressbar</option>
+      </event>
+    </panel>
+  </row>
+</form>
