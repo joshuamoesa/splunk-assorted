@@ -1,0 +1,71 @@
+<form>
+  <label>ESB for C2C-Partijenpost tracing PRD</label>
+  <description>Version 0.1.0</description>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <table>
+        <search>
+          <query>index=applications_esb_p_apl6169 
+
+(host="/ecs/pnlp-esb-pes-sfcom-bulkmailorder" AND MonitorMessage.Body.Logging.Status="SEND" AND MonitorMessage.Body.Logging.LogMessage="BMO Message Published to FTL") OR
+(host="/ecs/pnlp-esb-ces-lipp-bulkmailorder" AND MonitorMessage.Body.Logging.Status="SENT" AND MonitorMessage.Body.Logging.LogMessage="SubscribeBulkMailorder processed") OR
+(host="/ecs/pnlp-esb-pes-lipp-bulkmailannouncement" AND MonitorMessage.Body.Logging.Status="SENT" AND MonitorMessage.Body.Logging.LogMessage="Message SENT") OR
+(host="/ecs/pnlp-esb-ces-cpp-bulkmailannouncement" AND MonitorMessage.Body.Logging.Status="SENT" AND MonitorMessage.Body.Logging.LogMessage="Message Sent") OR 
+(host="/ecs/pnlp-esb-pes-cpp-observationbulkmail" AND MonitorMessage.Body.Logging.Status="SENT" AND MonitorMessage.Body.Logging.LogMessage="OBM Event finished. Event was published and sync reply sent to CPP") OR
+(host="/ecs/pnlp-esb-ces-saphybrisbilling-observationbulkmail" AND MonitorMessage.Body.Logging.Status="SENT" AND MonitorMessage.Body.Logging.LogMessage="File successfully sent to SFTP") OR
+(host="/ecs/pnlp-esb-ces-mailinfo-observationbulkmail" AND MonitorMessage.Body.Logging.Status="SENT" AND MonitorMessage.Body.Logging.LogMessage="SubscribeObservationBulkMail processed")
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status 
+MonitorMessage.Body.Logging.LogMessage AS LogMessage
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval zip=mvzip('MonitorMessage.Body.MessageProperties.MessageProperty{}.name','MonitorMessage.Body.MessageProperties.MessageProperty{}.value')
+| eval zip=upper(zip)
+| eval ConsignmentID=mvfilter(match(zip, "CONSIGNMENTID\(S\),"))
+| rex field=ConsignmentID mode=sed "s/CONSIGNMENTID\(S\),//g"
+
+| eval count_pes-sfcom-bmo=if(host=="/ecs/pnlp-esb-pes-sfcom-bulkmailorder",1,0)
+| eval count_ces-lipp-bmo=if(host=="/ecs/pnlp-esb-ces-lipp-bulkmailorder",1,0)
+| eval count_pes-lipp-bma=if(host=="/ecs/pnlp-esb-pes-lipp-bulkmailannouncement",1,0)
+| eval count_ces-cpp-bma=if(host=="/ecs/pnlp-esb-ces-cpp-bulkmailannouncement",1,0)
+| eval count_pes-cpp-obm=if(host=="/ecs/pnlp-esb-pes-cpp-observationbulkmail",1,0)
+| eval count_pes-saphybrisbilling-bma=if(host=="/ecs/pnlp-esb-ces-saphybrisbilling-observationbulkmail",1,0)
+| eval count_pes-mailinfo-bma=if(host=="/ecs/pnlp-esb-ces-mailinfo-observationbulkmail",1,0)
+
+| eval timestamp=strftime(_time, "%H:%M:%S.%3N")
+| eval host=timestamp." : ".host
+
+| stats
+count as total_count
+sum(count_pes-sfcom-bmo) as count_pes-sfcom-bmo
+sum(count_ces-lipp-bmo) as count_ces-lipp-bmo
+sum(count_pes-lipp-bma) as count_pes-lipp-bma
+sum(count_ces-cpp-bma) as count_ces-cpp-bma
+sum(count_pes-cpp-obm) as count_pes-cpp-obm
+sum(count_pes-saphybrisbilling-bma) as count_pes-saphybrisbilling-bma
+sum(count_pes-mailinfo-bma) as count_pes-mailinfo-bma
+values(host) as host_trace
+by ConsignmentID
+
+| table ConsignmentID, host_trace, count_pes-sfcom-bmo, count_ces-lipp-bmo, count_pes-lipp-bma, count_ces-cpp-bma, count_pes-cpp-obm, count_pes-saphybrisbilling-bma, count_pes-mailinfo-bma</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">cell</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+      </table>
+    </panel>
+  </row>
+</form>
