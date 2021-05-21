@@ -1,0 +1,958 @@
+<form refresh="60" theme="dark">
+  <label>Prime Vision EMS &amp; SBS PRD Joshua -&gt; OBSOLETE</label>
+  <description>Dashboard for EMS, SBS, Collo and 2D barcode monitoring (production). Sender and receiver queues can be found here https://primevision.sharepoint.com/:x:/s/EMSHostingPV/ET5Mr-ThBCpCtHHR32ZJudgBOUFitReKP8zR40wNDw5GsA?e=jKAb7c</description>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="time" token="field1" searchWhenChanged="true">
+      <label>Select time window</label>
+      <default>
+        <earliest>-60m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="env_token" searchWhenChanged="true">
+      <label>Select environment</label>
+      <choice value="prod">PRODUCTION</choice>
+      <choice value="acc">ACCEPTANCE</choice>
+      <default>PRODUCTION</default>
+      <change>
+        <condition label="PRODUCTION">
+          <set token="index_app">index=applications_pv_ems_p_g00762</set>
+          <set token="env_label">production environment</set>
+          <set token="dashboard_theme">light</set>
+        </condition>
+        <condition label="ACCEPTANCE">
+          <set token="index_app">index=applications_pv_ems_ota</set>
+          <set token="env_label">acceptance environment</set>
+          <set token="dashboard_theme">dark</set>
+        </condition>
+      </change>
+    </input>
+  </fieldset>
+  <row depends="$alwaysHideCSSPanel$">
+    <panel>
+      <html>
+         <style>
+           h1.prod {
+             color: #dc4e41 !important;
+           }
+         </style>
+       </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="$env_token$">$env_label$</h1>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSCENTRAL.PREANNOUNCEMENT</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.PREANNOUNCEMENT | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">73</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[2000,10000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>RETOURRETAIL</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.RETOURRETAIL | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">74</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[1000,2000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>REROUTE</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.REROUTE | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[1000,2000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>DISTRIBUTION</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.DISTRIBUTION | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[1000,2000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSCENTRAL.SORTEERRESULTAAT</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.SORTEERRESULTAAT | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">68</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[2000,10000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.SBSADAPTER.SORTING</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSADAPTER.SORTING | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">69</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[500,1000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.SBSEMSBRIDGE.SORTINGPRODUCT</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSEMSBRIDGE.SORTINGPRODUCT | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">68</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[1000,3000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.SBSEMSBRIDGE.SORTINGPRODUCTCR</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSEMSBRIDGE.SORTINGPRODUCTCR | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">67</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[100,500]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSCENTRAL.CODINGRESULT</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.CODINGRESULT | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">67</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[100,200]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.COLLONG.PREANNOUNCEMENT</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.COLLONG.PREANNOUNCEMENT | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">69</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[3000,10000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.MWSADAPTER.CONTAINER</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.MWSADAPTER.CONTAINER | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">68</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[50,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.2DTRANSLATOR.DECODING</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.2DTRANSLATOR.DECODING | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">68</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[50,200]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>PREANNOUNCEMENT CONSUMERS</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.PREANNOUNCEMENT | stats latest(receiverCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">73</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[9,11]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>SORTEERRESULTAAT CONSUMERS</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.SORTEERRESULTAAT | stats latest(receiverCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[16,19]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>SORTEERMELDING CONSUMERS</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SBSADAPTER.SORTING | stats latest(receiverCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">74</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[30,49]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>2DTRANSL. DECODING CONSUMERS</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.2DTRANSLATOR.DECODING | stats latest(receiverCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">75</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[2,3]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSDECENTRAL.SORTINGPRODUCT.*</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSDECENTRAL.SORTINGPRODUCT.* | stats latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-45</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSCENTRAL.PREANNOUNCEMENT timechart afgelopen $field1.earliest$ minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.PREANNOUNCEMENT* earliest=$field1.earliest$ | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSCENTRAL.SORTEERRESULTAAT timechart afgelopen 60 minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSCENTRAL.SORTEERRESULTAAT earliest=-60m | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Q.ESB.SBSADAPTER.SORTING timechart afgelopen 60 minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSADAPTER.SORTING earliest=-60m | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSDECENTRAL.SORTINGPRODUCT.* timechart afgelopen 60 minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSDECENTRAL.SORTINGPRODUCT.* earliest=-60m | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Q.ESB.SBSDECENTRAL.SORTINGPRODUCTCR.* timechart afgelopen 60 minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSDECENTRAL.SORTINGPRODUCTCR.* earliest=-60m | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSEMSBRIDGE.SORTINGPRODUCT timechart afgelopen 60 minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSEMSBRIDGE.SORTINGPRODUCT earliest=-60m | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Q.ESB.SBSADAPTER.CODINGRESULT* timechart afgelopen 60 minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSADAPTER.CODINGRESULT* earliest=-60m | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.SBSDECENTRAL.MANIFEST*</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSDECENTRAL.MANIFEST* | stats latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-45</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Q.ESB.COLLONG.* timechart afgelopen 60 minuten</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.COLLONG.* earliest=-60m | timechart span=1m latest(pendingMessageCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">0</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Sortingproduct Consumers</title>
+      <chart>
+        <search>
+          <query>$index_app$ Q.ESB.SBSDECENTRAL.SORTINGPRODUCT.* | stats latest(receiverCount) by Queue</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-45</option>
+        <option name="charting.axisTitleX.visibility">visible</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">column</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">right</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Mappingtable queue</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.SORTING.MAPPINGTABLE | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">73</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[50,200]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Collo preannouncement consumers</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.COLLONG.PREANNOUNCEMENT | stats latest(receiverCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">69</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[2,3]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.CIPABA.OMI4 Queue</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.CIPABA.OMI4 | stats latest(pendingMessageCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">73</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[200,1000]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Q.ESB.CIPABA.OMI4 Consumers</title>
+      <single>
+        <search>
+          <query>$index_app$ Q.ESB.CIPABA.OMI4 | stats latest(receiverCount)</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">69</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0xdc4e41","0xf8be34","0x53a051"]</option>
+        <option name="rangeValues">[2,3]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useColors">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <event>
+        <title>pv_ems_syslog</title>
+        <search>
+          <query>$index_app$ sourcetype=pv_ems_syslog</query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="list.drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </event>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>pv_ems_syslog stats today</title>
+      <table>
+        <search>
+          <query>$index_app$ sourcetype=pv_ems_syslog
+
+| rex field=_raw "\w+\s[0-9]+\s[0-9]+:[0-9]+:[0-9]+\s([0-9]+.[0-9]+.[0-9]+.[0-9]+|\w+)\s(?&lt;logmessage&gt;.*)"
+
+| stats count by logmessage</query>
+          <earliest>@d</earliest>
+          <latest>now</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">100</option>
+        <option name="dataOverlayMode">heatmap</option>
+        <option name="drilldown">row</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">false</option>
+        <option name="totalsRow">true</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
