@@ -1,0 +1,472 @@
+<form>
+  <label>Flow Voormelding</label>
+  <description>Version 0.1.0</description>
+  <fieldset submitButton="false">
+    <input type="time" token="field1">
+      <label></label>
+      <default>
+        <earliest>-15m</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
+  </fieldset>
+  <row depends="$alwaysHideCSSPanel$">
+    <panel>
+      <html>
+         <style>
+           h1.custom-flowheader {
+             display:inline;
+             color: #3440b6;
+           }
+           div.custom-div {
+             text-align:right !important;
+           }           
+           div.custom-paneldescription {
+             padding: 10px 10px 10px 10px;
+           }
+           .dashboard-panel h2{
+             background:#cccccc !important;
+             color:white !important;
+             text-align: left !important;
+             font-weight: bold !important;
+             border-top-right-radius: 15px;
+             border-top-left-radius: 15px;
+           }
+         </style>
+       </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="custom-flowheader">KPI 1: ABS&amp;BFC-&gt;SBS-C</h1>    <strong>|  Process messages from BFC and ABS to SBS-C</strong>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div class="custom-paneldescription">
+          Delta between received messages and sent messages should not be greater than 5% within a 10 minute timeframe.<br/>
+          Below statistics table shows the following metrics:<br/>
+          <ul style="padding-left:20px">
+            <li>
+              <strong>count_pes_bfc_vm</strong> received from BFC on pes-bfc-voormelding.</li>
+            <li>
+              <strong>count_pes_abs_vm</strong> received from ABS on pes-abs-voormelding. </li>
+            <li>
+              <strong>count_ces_sbsc_oo</strong> delivered to SBS Central via ces-sbsc-operatororder.</li>
+            <li>
+              <strong>deviation_perc</strong> deviation measured in percentage.</li>
+          </ul>
+        </div>  
+      </html>
+      <table>
+        <title>Statistics table</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-abs-voormelding" OR
+host="/ecs/pnlp-esb-pes-bfc-voormelding" OR
+host="/ecs/pnlp-esb-ces-sbsc-operatororder"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_info_abs_vm = if(match(host,"/ecs/pnlp-esb-pes-abs-voormelding") AND Status=="INFO", 1,0)
+| eval pes_received_bfc_vm = if(match(host,"/ecs/pnlp-esb-pes-bfc-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_sbsc_oo = if(match(host,"/ecs/pnlp-esb-ces-sbsc-operatororder") AND Status=="SENT", 1,0)
+| eval ces_resent_sbsc_oo=if(match(host,"/ecs/pnlp-esb-ces-sbsc-operatororder") AND LogMessage=="Message successfully resent." ,1,0) 
+
+| stats
+sum(pes_info_abs_vm) AS count_pes_abs_vm
+sum(pes_received_bfc_vm) AS count_pes_bfc_vm
+sum(ces_sent_sbsc_oo) AS count_ces_sbsc_oo
+sum(ces_resent_sbsc_oo) AS count_ces_sbsc_oo_resent
+
+| eval deviation_perc=((((count_pes_bfc_vm+count_pes_abs_vm)-count_ces_sbsc_oo)/(count_pes_bfc_vm+count_pes_abs_vm))*100)
+
+| table count_pes_bfc_vm, count_pes_abs_vm, count_ces_sbsc_oo, deviation_perc
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <chart>
+        <title>Timechart - points with 5m interval</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-abs-voormelding" OR
+host="/ecs/pnlp-esb-pes-bfc-voormelding" OR
+host="/ecs/pnlp-esb-ces-sbsc-operatororder"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_info_abs_vm = if(match(host,"/ecs/pnlp-esb-pes-abs-voormelding") AND Status=="INFO", 1,0)
+| eval pes_received_bfc_vm = if(match(host,"/ecs/pnlp-esb-pes-bfc-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_sbsc_oo = if(match(host,"/ecs/pnlp-esb-ces-sbsc-operatororder") AND Status=="SENT", 1,0)
+
+| timechart span=5m sum(pes_info_abs_vm) AS count_pes_abs_vm sum(pes_received_bfc_vm) AS count_pes_bfc_vm sum(ces_sent_sbsc_oo) AS count_ces_sbsc_oo
+| eval deviation_perc=if(round(((((count_pes_bfc_vm+count_pes_abs_vm)-count_ces_sbsc_oo)/(count_pes_bfc_vm+count_pes_abs_vm))*100),2) &lt; 0,"0", round(((((count_pes_bfc_vm+count_pes_abs_vm)-count_ces_sbsc_oo)/(count_pes_bfc_vm+count_pes_abs_vm))*100),2))
+| eval deviation_threshold = 5
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY2.text">Deviation in %</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.overlayFields">deviation_perc,deviation_threshold</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"deviation_threshold":"#cc0000"}</option>
+        <option name="charting.fieldDashStyles">{"deviation_threshold":"shortDash"}</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="custom-flowheader">KPI 2: BFC-&gt;SBS-C</h1>    <strong>|  Process messages from BFC to SBS-C</strong>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div class="custom-paneldescription">
+          Delta between received messages and sent messages should not be greater than 5% within a 10 minute timeframe.<br/>
+          Below statistics table shows the following metrics:<br/>
+          <ul style="padding-left:20px">
+            <li>
+              <strong>count_pes_bfc_vm</strong> received from BFC on pes-bfc-voormelding.</li>
+            <li>
+              <strong>count_ces_sbsc_vm</strong> delivered to SBS Central via ces-sbsc-voormelding.</li>
+            <li>
+              <strong>deviation_perc</strong> deviation measured in percentage.</li>
+          </ul>
+        </div>  
+      </html>
+      <table>
+        <title>Statistics table</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-bfc-voormelding" OR
+host="/ecs/pnlp-esb-ces-sbsc-voormelding"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_received_bfc_vm = if(match(host,"/ecs/pnlp-esb-pes-bfc-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_sbsc_vm = if(match(host,"/ecs/pnlp-esb-ces-sbsc-voormelding") AND Status=="SENT", 1,0)
+| eval ces_resent_sbsc_oo=if(match(host,"/ecs/pnlp-esb-ces-sbsc-operatororder") AND LogMessage=="Message successfully resent." ,1,0) 
+
+| stats
+sum(pes_received_bfc_vm) AS count_pes_bfc_vm
+sum(ces_sent_sbsc_vm) AS count_ces_sbsc_vm
+sum(ces_resent_sbsc_vm) AS count_ces_sbsc_vm_resent
+
+| eval deviation_perc=(((count_pes_bfc_vm-count_ces_sbsc_vm)/count_pes_bfc_vm)*100)
+
+| table count_pes_bfc_vm, count_ces_sbsc_vm, deviation_perc
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <chart>
+        <title>Timechart - points with 5m interval</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-bfc-voormelding" OR
+host="/ecs/pnlp-esb-ces-sbsc-voormelding"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_received_bfc_vm = if(match(host,"/ecs/pnlp-esb-pes-bfc-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_sbsc_vm = if(match(host,"/ecs/pnlp-esb-ces-sbsc-voormelding") AND Status=="SENT", 1,0)
+
+| timechart span=5m sum(pes_received_bfc_vm) AS count_pes_bfc_vm sum(ces_sent_sbsc_vm) AS count_ces_sbsc_vm
+
+| eval deviation_perc=if((((count_pes_bfc_vm-count_ces_sbsc_vm)/count_pes_bfc_vm)*100) &lt; 0, "0", round((((count_pes_bfc_vm-count_ces_sbsc_vm)/count_pes_bfc_vm)*100),2))
+
+| eval deviation_threshold = 5
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY2.text">Deviation in %</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.overlayFields">deviation_perc,deviation_threshold</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"deviation_threshold":"#cc0000"}</option>
+        <option name="charting.fieldDashStyles">{"deviation_threshold":"shortDash"}</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="custom-flowheader">KPI 3: NRP-&gt;SBS-C</h1>    <strong>|  Process messages from BFC to SBS-C</strong>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div class="custom-paneldescription">
+          Delta between received messages and sent messages should not be greater than 5% within a 10 minute timeframe.<br/>
+          Below statistics table shows the following metrics:<br/>
+          <ul style="padding-left:20px">
+            <li>
+              <strong>count_pes_nrp_vm</strong> received from NRP on pes-nrp-voormelding.</li>
+            <li>
+              <strong>count_ces_sbsc_oo</strong> delivered to SBS Central via ces-sbsc-operatororder.</li>
+            <li>
+              <strong>deviation_perc</strong> deviation measured in percentage.</li>
+          </ul>
+        </div>  
+      </html>
+      <table>
+        <title>Statistics table</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-nrp-voormelding" OR
+host="/ecs/pnlp-esb-ces-sbsc-operatororder"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_received_nrp_vm = if(match(host,"/ecs/pnlp-esb-pes-nrp-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_sbsc_oo = if(match(host,"/ecs/pnlp-esb-ces-sbsc-operatororder") AND Status=="SENT", 1,0)
+
+| stats
+sum(pes_received_nrp_vm) AS count_pes_nrp_vm
+sum(ces_sent_sbsc_oo) AS count_ces_sbsc_oo
+sum(ces_resent_sbsc_oo) AS count_ces_sbsc_oo_resent
+
+| eval deviation_perc=(((count_pes_nrp_vm-count_ces_sbsc_oo)/count_pes_nrp_vm)*100)
+
+| table count_pes_nrp_vm, count_ces_sbsc_oo, deviation_perc
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <chart>
+        <title>Timechart - points with 5m interval</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-nrp-voormelding" OR
+host="/ecs/pnlp-esb-ces-sbsc-operatororder"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_received_nrp_vm = if(match(host,"/ecs/pnlp-esb-pes-nrp-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_sbsc_oo = if(match(host,"/ecs/pnlp-esb-ces-sbsc-operatororder") AND Status=="SENT", 1,0)
+
+| timechart span=5m sum(pes_received_nrp_vm) AS count_pes_nrp_vm sum(ces_sent_sbsc_oo) AS count_ces_sbsc_oo
+
+| eval deviation_perc=if((((count_pes_nrp_vm-count_ces_sbsc_oo)/count_pes_nrp_vm)*100) &lt; 0, "0", round((((count_pes_nrp_vm-count_ces_sbsc_oo)/count_pes_nrp_vm)*100),2))
+
+| eval deviation_threshold = 5
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY2.text">Deviation in %</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.overlayFields">deviation_perc,deviation_threshold</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"deviation_threshold":"#cc0000"}</option>
+        <option name="charting.fieldDashStyles">{"deviation_threshold":"shortDash"}</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div>
+          <h1 class="custom-flowheader">KPI 4: ABS&amp;BFC-&gt;NRP</h1>    <strong>|  Process messages from BFC and ABS to NRP</strong>
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div class="custom-paneldescription">
+          Delta between received messages and sent messages should not be greater than 5% within a 10 minute timeframe.<br/>
+          Below statistics table shows the following metrics:<br/>
+          <ul style="padding-left:20px">
+            <li>
+              <strong>count_pes_bfc_vm</strong> received from BFC on pes-bfc-voormelding.</li>
+            <li>
+              <strong>count_pes_abs_vm</strong> received from ABS on pes-abs-voormelding. </li>
+            <li>
+              <strong>count_ces_nrp_co</strong> delivered to NRP via ces-nrp-customerororder.</li>
+            <li>
+              <strong>deviation_perc</strong> deviation measured in percentage.</li>
+          </ul>
+        </div>  
+      </html>
+      <table>
+        <title>Statistics table</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-abs-voormelding" OR
+host="/ecs/pnlp-esb-pes-bfc-voormelding" OR
+host="/ecs/pnlp-esb-ces-nrp-customerorder"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_info_abs_vm = if(match(host,"/ecs/pnlp-esb-pes-abs-voormelding") AND Status=="INFO", 1,0)
+| eval pes_received_bfc_vm = if(match(host,"/ecs/pnlp-esb-pes-bfc-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_nrp_co = if(match(host,"/ecs/pnlp-esb-ces-nrp-customerorder") AND Status=="SENT", 1,0)
+| eval ces_resent_nrp_oo=if(match(host,"/ecs/pnlp-esb-ces-nrp-customerorder") AND LogMessage=="Message successfully resent." ,1,0) 
+
+| stats
+sum(pes_info_abs_vm) AS count_pes_abs_vm
+sum(pes_received_bfc_vm) AS count_pes_bfc_vm
+sum(ces_sent_nrp_co) AS count_ces_nrp_co
+sum(ces_resent_nrp_co) AS count_ces_nrp_co_resent
+
+| eval deviation_perc=((((count_pes_bfc_vm+count_pes_abs_vm)-count_ces_nrp_co)/(count_pes_bfc_vm+count_pes_abs_vm))*100)
+
+| table count_pes_bfc_vm, count_pes_abs_vm, count_ces_nrp_co, deviation_perc
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+    <panel>
+      <chart>
+        <title>Timechart - points with 5m interval</title>
+        <search>
+          <query>
+index=applications_esb_p_apl6169 
+(
+host="/ecs/pnlp-esb-pes-abs-voormelding" OR
+host="/ecs/pnlp-esb-pes-bfc-voormelding" OR
+host="/ecs/pnlp-esb-ces-nrp-customerorder"
+)
+
+| rename 
+MonitorMessage.Body.Logging.Status AS Status
+MonitorMessage.Body.Logging.LogMessage AS LogMessage 
+MonitorMessage.Header.EventInformation.Activity AS StartActivity
+MonitorMessage.Header.EventInformation.CorrelationID AS CorrelationID
+
+| eval pes_info_abs_vm = if(match(host,"/ecs/pnlp-esb-pes-abs-voormelding") AND Status=="INFO", 1,0)
+| eval pes_received_bfc_vm = if(match(host,"/ecs/pnlp-esb-pes-bfc-voormelding") AND Status=="RECEIVED", 1,0)
+| eval ces_sent_nrp_co = if(match(host,"/ecs/pnlp-esb-ces-nrp-customerorder") AND Status=="SENT", 1,0)
+
+| timechart span=5m sum(pes_info_abs_vm) AS count_pes_abs_vm sum(pes_received_bfc_vm) AS count_pes_bfc_vm sum(ces_sent_nrp_co) AS count_ces_nrp_co
+| eval deviation_perc=if(round(((((count_pes_bfc_vm+count_pes_abs_vm)-count_ces_nrp_co)/(count_pes_bfc_vm+count_pes_abs_vm))*100),2) &lt; 0,"0", round(((((count_pes_bfc_vm+count_pes_abs_vm)-count_ces_nrp_co)/(count_pes_bfc_vm+count_pes_abs_vm))*100),2))
+| eval deviation_threshold = 5
+          </query>
+          <earliest>$field1.earliest$</earliest>
+          <latest>$field1.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleY2.text">Deviation in %</option>
+        <option name="charting.axisY2.enabled">1</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.overlayFields">deviation_perc,deviation_threshold</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.drilldown">none</option>
+        <option name="charting.fieldColors">{"deviation_threshold":"#cc0000"}</option>
+        <option name="charting.fieldDashStyles">{"deviation_threshold":"shortDash"}</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisEnd</option>
+        <option name="charting.legend.placement">bottom</option>
+        <option name="height">250</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+  </row>
+</form>
